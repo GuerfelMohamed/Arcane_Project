@@ -2,7 +2,7 @@ from flask import Flask
 from flask_jwt import JWT
 from flask_restful import Api
 
-from db import db 
+
 from config import mysqlConfig
 from resources.room import Room, RoomList
 from resources.house import HouseList, AddHouse, House
@@ -27,5 +27,7 @@ api.add_resource(RoomList, '/rooms/<int:house_id>') # get house rooms
 api.add_resource(Room, '/room/<int:id>') # update/delete room
 
 with app.app_context():
+    from db import db , migrate
     db.init_app(app)
+    migrate.init_app(app,db)
     db.create_all()

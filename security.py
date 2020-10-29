@@ -13,10 +13,3 @@ def identity(payload):
     user_id = payload['identity']
     return UserModel.find_by_id(user_id)
 
-def checkuser(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if current_identity.username == 'user1':
-            return func(*args, **kwargs)
-        return {'message': "user not allowed "}, 401
-    return wrapper
