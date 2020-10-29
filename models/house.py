@@ -8,21 +8,27 @@ class HouseModel(db.Model):
     description = db.Column(db.String(1000))
     type_id = db.Column(db.Integer, db.ForeignKey('types.id'))
     city_id = db.Column(db.Integer, db.ForeignKey('cities.id'))
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     rooms = db.relationship('RoomModel', lazy='dynamic')
 
-    def __init__(self, name, description, type_id, city_id):
+    def __init__(self, name, description, type_id, city_id, owner_id):
         self.name = name
         self.description = description
         self.type_id = type_id
         self.city_id = city_id
+        self.owner_id = owner_id
 
     def json(self):
         return {'id':self.id, 'name': self.name, 'description': self.description, 
-                'House_type':self.type_id, 'city': self.city_id, 'rooms': [room.json() for room in self.rooms.all()]}
+                'House_type':self.type_id, 'city': self.city_id,'owner': self.owner_id,
+                'rooms': [room.json() for room in self.rooms.all()]}
 
     @classmethod
     def find_by_id(cls, _id):
         return cls.query.filter_by(id=_id).first()
+    @classmethod
+    def find_by_owner(cls, _id, owner_id):
+        return cls.query.filter_by(id=_id, owner_id= owner_id).first()
 
     def save_to_db(self):
         db.session.add(self)
