@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 
-from db import db 
+from db import db , migrate
 from config import mysqlConfig
 from resources.room import Room, RoomList
 from resources.house import HouseList, AddHouse, House
@@ -22,4 +22,5 @@ api.add_resource(Room, '/room/<int:id>')
 
 with app.app_context():
     db.init_app(app)
+    migrate.init_app(app,db)
     db.create_all()
