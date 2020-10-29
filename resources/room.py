@@ -21,7 +21,7 @@ class Room(Resource):
             return {"message": "An error occurred inserting the room."}, 500
         return room.json(), 201"""
 
-
+    #@jwt_required()
     def delete(self, id):
 
         room = RoomModel.find_by_id(id)
@@ -29,7 +29,7 @@ class Room(Resource):
             room.delete_from_db()
             return {'message': 'room has been deleted'}
 
-
+    #@jwt_required()
     def put(self, id):
         room = RoomModel.find_by_id(id)
         if not room:

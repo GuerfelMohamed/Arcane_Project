@@ -1,4 +1,5 @@
 from flask_restful import Resource, reqparse
+from flask_jwt import jwt_required, current_identity
 from models.house import HouseModel, CityModel, TypeModel
 from models.room import RoomModel
 import ast
@@ -16,17 +17,19 @@ class House(Resource):
             return house.json()
         return {'message': 'house not found'}, 404
 
+    @jwt_required()
     def delete(self, id):
-        house = HouseModel.find_by_id(id)
-        if house:
-            house.delete_from_db()
-
+        house = HouseModel.find_by_owner(id,current_identity.id) #user can alony delete his house
+        if not house:
+            return {"message": "house not found or you are not allowed"}
+        house.delete_from_db()
         return {'message': 'house deleted'}
     
+    @jwt_required()
     def put(self, id):
-        house = HouseModel.find_by_id(id)
+        house = HouseModel.find_by_owner(id,current_identity.id) # user can alony edit his house
         if not house:
-            return {'message': 'house not found'}, 404
+            return {'message': 'house not found or your are not allowed'}, 404
         data = House.parser.parse_args()
         if data['name'] is not None:
             house.name = data['name']
@@ -60,9 +63,9 @@ class AddHouse(Resource):
         parser.add_argument('city', type=str, required=True, help='Must enter the house location')
         parser.add_argument('rooms',type=str, action="append")
         
+        @jwt_required()
         def post(self):
             data = AddHouse.parser.parse_args()
-            rooms =[ast.literal_eval(rooms) for rooms in data['rooms']]
 
             house_type = TypeModel.find_by_name(data['house_type'])
             if not house_type:
@@ -73,15 +76,18 @@ class AddHouse(Resource):
                 return {'message':"invalide city name"}, 400
             
                 
-            house = HouseModel(data['name'],data['description'],house_type.id,city.id)
+            house = HouseModel(data['name'],data['description'],house_type.id,city.id,current_identity.id)
             try:
                 house.save_to_db()
             except:
-                return {"message": "An error occurred creating the store."}, 500
+                return {"message": "An error occurred creating the house model."}, 500
             
-            for x in rooms:
-                room = RoomModel(x['characteristics'],house.id)
-                room.save_to_db()
+            # add the new house attached rooms
+            if data['rooms'] is not None:
+                rooms =[ast.literal_eval(rooms) for rooms in data['rooms']]
+                for x in rooms:
+                    room = RoomModel(x['characteristics'],house.id)
+                    room.save_to_db()
 
             return house.json(), 201
 
