@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # DataBase Config
-mysql = {'host': 'localhost',
+mysql = {'host': 'db',
          'user': 'root',
          'passwd': 'root',
          'db': 'arcane'}
